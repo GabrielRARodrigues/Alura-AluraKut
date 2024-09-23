@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import {
   AlurakutMenu,
@@ -30,6 +30,28 @@ function ProfileSidebar({ githubUser }) {
   )
 }
 
+function ProfileRelationsBox({ title, itens }) {
+  return (
+    <ProfileRelationsBoxWrapper>
+      <h2 className="smallTitle">
+        {title} ({itens.length})
+      </h2>
+      {
+        <ul>
+          {/* {itens.map(item => (
+            <li key={item.id}>
+              <a href={`/users/${item.title}`}>
+                <img src={item.image} />
+                <span>{item.title}</span>
+              </a>
+            </li>
+          ))} */}
+        </ul>
+      }
+    </ProfileRelationsBoxWrapper>
+  )
+}
+
 export default function Home() {
   const [comunidades, setComunidades] = useState([
     {
@@ -38,6 +60,8 @@ export default function Home() {
       image: 'https://alurakut.vercel.app/capa-comunidade-01.jpg'
     }
   ])
+
+  const [followers, setFollowers] = useState([])
 
   const githubUser = 'GabrielRARodrigues'
   const pessoasFavoritas = [
@@ -48,6 +72,16 @@ export default function Home() {
     'marcobrunodev',
     'felipefialho'
   ]
+
+  useEffect(() => {
+    fetch('https://api.github.com/users/GabrielRARodrigues/followers')
+      .then(serverResponse => serverResponse.json())
+      .then(fullResponse => {
+        setFollowers(fullResponse)
+      })
+  }, [])
+
+  console.log(followers)
 
   function handleCreateCommunity(e) {
     e.preventDefault()
@@ -105,6 +139,8 @@ export default function Home() {
           className="profileRelationsArea"
           style={{ gridArea: 'profileRelationsArea' }}
         >
+          <ProfileRelationsBox title="Seguidores" itens={followers} />
+
           <ProfileRelationsBoxWrapper>
             <h2 className="smallTitle">Comunidades ({comunidades.length})</h2>
             {
