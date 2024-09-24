@@ -53,13 +53,7 @@ function ProfileRelationsBox({ title, itens }) {
 }
 
 export default function Home() {
-  const [comunidades, setComunidades] = useState([
-    {
-      id: '1242345346455645573463643 ',
-      title: 'Eu odeio acordar cedo',
-      image: 'https://alurakut.vercel.app/capa-comunidade-01.jpg'
-    }
-  ])
+  const [comunidades, setComunidades] = useState([])
 
   const [followers, setFollowers] = useState([])
 
@@ -79,24 +73,39 @@ export default function Home() {
       .then(fullResponse => {
         setFollowers(fullResponse)
       })
-  }, [])
 
-  console.log(followers)
+    fetch('/api/communities')
+      .then(response => response.json())
+      .then(fullResponse => {
+        const communities = fullResponse
+        setComunidades(communities)
+      })
+  }, [])
 
   function handleCreateCommunity(e) {
     e.preventDefault()
     const formData = new FormData(e.target)
 
     const comunidade = {
-      id: new Date().toISOString(),
       title: formData.get('title'),
-      image: formData.get('image')
+      imageUrl: formData.get('image'),
+      creatorSlug: githubUser
     }
 
-    setComunidades(comunidades => {
-      const comunidadesAtualizadas = [...comunidades, comunidade]
+    fetch('/api/communities', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(comunidade)
+    }).then(async response => {
+      const data = await response.json()
 
-      return comunidadesAtualizadas
+      const community = await data.createdRecord
+
+      const comunidadesAtualizadas = [...comunidades, community]
+
+      setComunidades(comunidadesAtualizadas)
     })
   }
 
@@ -147,8 +156,8 @@ export default function Home() {
               <ul>
                 {comunidades.map(comunidade => (
                   <li key={comunidade.id}>
-                    <a href={`/users/${comunidade.title}`}>
-                      <img src={comunidade.image} />
+                    <a href={`/communities/${comunidade.id}`}>
+                      <img src={comunidade.imageUrl} />
                       <span>{comunidade.title}</span>
                     </a>
                   </li>
